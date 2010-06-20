@@ -201,6 +201,8 @@ bool Md2::Load(const std::string &file)
 		//m_frameMap[m_frames[i].name] = i;
 	}
 
+	fclose(fp);
+
 	// Cleanup and finishing touches.
 	// Vertex coordinates, as of now, are waaay out of range (most likely, unless the model is tiny).
 	// We could've scaled them down above while reading them in, but I noticed issues calculating normals
@@ -235,10 +237,162 @@ bool Md2::Load(const std::string &file)
 		//}
 	}
 
+	// check for an animation definition file
+	std::string animationFile = file;
+	animationFile.erase(animationFile.find_last_of('.', std::string::npos));
+	animationFile.append(".animations");
+
+	fp = fopen(animationFile.c_str(), "r");
+	if (fp != NULL)
+	{
+		char *buffer = new char[80];
+		std::string line;
+		std::string name;
+		std::string temp;
+		int start;
+		int end;
+
+		while (!feof(fp))
+		{
+			fgets(buffer, 80, fp);
+			line = buffer;
+
+			if (strlen(buffer) > 5)		// minimum length for a viable frame definition
+			{
+				// get animation name
+				int nameEnd = line.find_first_of(',');
+				if (nameEnd == std::string::npos)
+					continue;
+				name = line.substr(0, nameEnd);
+
+				// get start frame index
+				int startEnd = line.find_first_of(',', nameEnd + 1);
+				if (startEnd == std::string::npos)
+					continue;
+				temp = line.substr(nameEnd + 1, startEnd);
+				start = atoi(temp.c_str());
+
+				// get end frame index
+				temp = line.substr(startEnd + 1, std::string::npos);
+				end = atoi(temp.c_str());
+
+				Md2Animation *animation = new Md2Animation();
+				animation->name = name;
+				animation->startFrame = start;
+				animation->endFrame = end;
+				m_animations.push_back(*animation);
+			}
+		}
+		delete[] buffer;
+
+		fclose(fp);
+	}
+
 	return true;
 }
 
 bool Md2::ConvertToMesh(const std::string &file)
 {
-	return false;
+	FILE *fp = fopen(file.c_str(), "wb");
+
+	fputs("MESH", fp);
+	unsigned char version = 1;
+	fwrite(&version, 1, 1, fp);
+
+	// keyframes chunk
+	fputs("KFR", fp);
+	long numFrames = m_numFrames;
+	long sizeofFrames = (sizeof(float) * 3 * 2) * numFrames + sizeof(long);
+	fwrite(&sizeofFrames, sizeof(long), 1, fp);
+	fwrite(&numFrames, sizeof(long), 1, fp);
+	for (long i = 0; i < numFrames; ++i)
+	{
+		// vertices
+		for (int j = 0; j < m_numVertices; ++j)
+		{
+			const Vector3 *vertex = &m_frames[i].vertices[j];
+			fwrite(&vertex->x, sizeof(float), 1, fp);
+			fwrite(&vertex->y, sizeof(float), 1, fp);
+			fwrite(&vertex->z, sizeof(float), 1, fp);
+		}
+
+		// normals
+		for (int j = 0; j < m_numVertices; ++j)
+		{
+			const Vector3 *normal = &m_frames[i].normals[j];
+			fwrite(&normal->x, sizeof(float), 1, fp);
+			fwrite(&normal->y, sizeof(float), 1, fp);
+			fwrite(&normal->z, sizeof(float), 1, fp);
+		}
+	}
+
+	// textures chunk
+	fputs("KTX", fp);
+	long numTexCoords = m_numTexCoords;
+	long sizeofTexCoords = (sizeof(float) * 2) * numTexCoords + sizeof(long);
+	fwrite(&sizeofTexCoords, sizeof(long), 1, fp);
+	fwrite(&numTexCoords, sizeof(long), 1, fp);
+	for (long i = 0; i < numTexCoords; ++i)
+	{
+		const Vector2 *texCoord = &m_texCoords[i];
+		fwrite(&texCoord->x, sizeof(float), 1, fp);
+		fwrite(&texCoord->y, sizeof(float), 1, fp);
+	}
+
+	// triangles chunk
+	fputs("KTR", fp);
+	long numPolys = m_numPolys;
+	long sizeofPolys = (sizeof(long) * 3 * 2) * numPolys + sizeof(long);
+	fwrite(&sizeofPolys, sizeof(long), 1, fp);
+	fwrite(&numPolys, sizeof(long), 1, fp);
+	for (long i = 0; i < numPolys; ++i)
+	{
+		long data;
+
+		// vertex indices
+		data = m_polys[i].vertex[0];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = m_polys[i].vertex[1];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = m_polys[i].vertex[2];
+		fwrite(&data, sizeof(long), 1, fp);
+
+		// tex coord indices
+		data = m_polys[i].texCoord[0];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = m_polys[i].texCoord[1];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = m_polys[i].texCoord[2];
+		fwrite(&data, sizeof(long), 1, fp);
+	}
+
+	if (m_animations.size() > 0)
+	{
+		// figure out the size of all the animation name strings
+		long sizeofNames = 0;
+		for (int i = 0; i < m_animations.size(); ++i)
+			sizeofNames += m_animations[i].name.length() + 1;
+
+		// animations chunk
+		fputs("ANI", fp);
+		long numAnimations = m_animations.size();
+		long sizeofAnimations = (sizeof(long) * 2) * numAnimations + sizeofNames + sizeof(long);
+		fwrite(&sizeofAnimations, sizeof(long), 1, fp);
+		fwrite(&numAnimations, sizeof(long), 1, fp);
+		for (long i = 0; i < numAnimations; ++i)
+		{
+			long data;
+			const Md2Animation *animation = &m_animations[i];
+			//fputs(animation->name.c_str(), fp);
+			fputs(animation->name.c_str(), fp);
+			fwrite("\0", 1, 1, fp);
+			data = animation->startFrame;
+			fwrite(&data, sizeof(long), 1, fp);
+			data = animation->endFrame;
+			fwrite(&data, sizeof(long), 1, fp);
+		}
+	}
+
+	fclose(fp);
+	return true;
 }

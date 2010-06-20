@@ -5,6 +5,7 @@
 #include "../geometry/vector2.h"
 
 #include <string>
+#include <vector>
 
 #define MD2_SKIN_NAME_LENGTH 64
 #define MD2_FRAME_NAME_LENGTH 16
@@ -57,6 +58,13 @@ typedef struct Md2Frame
 	}
 } Md2Frame;
 
+typedef struct
+{
+	std::string name;
+	unsigned int startFrame;
+	unsigned int endFrame;
+} Md2Animation;
+
 class Md2
 {
 public:
@@ -86,6 +94,7 @@ private:
 	Md2Polygon *m_polys;
 	Vector2 *m_texCoords;
 	std::string *m_skins;
+	std::vector<Md2Animation> m_animations;
 };
 
 #endif
