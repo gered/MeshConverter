@@ -302,9 +302,11 @@ bool Md2::ConvertToMesh(const std::string &file)
 	// keyframes chunk
 	fputs("KFR", fp);
 	long numFrames = m_numFrames;
-	long sizeofFrames = (sizeof(float) * 3 * 2) * numFrames + sizeof(long);
+	long numVertices = m_numVertices;
+	long sizeofFrames = ((sizeof(float) * 3 * 2) * numVertices) * numFrames + (sizeof(long) * 2);
 	fwrite(&sizeofFrames, sizeof(long), 1, fp);
 	fwrite(&numFrames, sizeof(long), 1, fp);
+	fwrite(&numVertices, sizeof(long), 1, fp);
 	for (long i = 0; i < numFrames; ++i)
 	{
 		// vertices
