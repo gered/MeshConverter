@@ -44,7 +44,7 @@ public:
 	virtual ~StaticModel()                                 { Release(); }
 
 	void Release();
-	bool Load(const std::string &file, const std::string &texturePath);
+	bool Load(const std::string &file);
 	bool ConvertToMesh(const std::string &file);
 
 	SmMaterial* GetMaterial(unsigned short index)          { return &m_materials[index]; }

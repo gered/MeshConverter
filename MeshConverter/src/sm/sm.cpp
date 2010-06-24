@@ -28,7 +28,7 @@ void StaticModel::Release()
 	delete[] m_normals;
 }
 
-bool StaticModel::Load(const std::string &file, const std::string &texturePath)
+bool StaticModel::Load(const std::string &file)
 {
 	FILE *fp;
 	unsigned short numMaterials;
@@ -97,7 +97,7 @@ bool StaticModel::Load(const std::string &file, const std::string &texturePath)
 			if (c)
 				texture += c;
 		} while (c != '\0');
-		m_materials[i].material->SetTexture(texturePath + texture);
+		m_materials[i].material->SetTexture(texture);
 	}
 
 	// Read in triangle definitions (all are indexes into raw data following)
@@ -216,6 +216,103 @@ bool StaticModel::ConvertToMesh(const std::string &file)
 	fputs("MESH", fp);
 	unsigned char version = 1;
 	fwrite(&version, 1, 1, fp);
+
+	// vertices chunk
+	fputs("VTX", fp);
+	long numVertices = m_numVertices;
+	long sizeofVertices = (sizeof(float) * 3) * numVertices + sizeof(long);
+	fwrite(&sizeofVertices, sizeof(long), 1, fp);
+	fwrite(&numVertices, sizeof(long), 1, fp);
+	for (long i = 0; i < numVertices; ++i)
+	{
+		const Vector3 *vector = &m_vertices[i];
+		fwrite(&vector->x, sizeof(float), 1, fp);
+		fwrite(&vector->y, sizeof(float), 1, fp);
+		fwrite(&vector->z, sizeof(float), 1, fp);
+	}
+
+	// normals chunk
+	fputs("NRL", fp);
+	long numNormals = m_numNormals;
+	long sizeofNormals = (sizeof(float) * 3) * numNormals + sizeof(long);
+	fwrite(&sizeofNormals, sizeof(long), 1, fp);
+	fwrite(&numNormals, sizeof(long), 1, fp);
+	for (long i = 0; i < numNormals; ++i)
+	{
+		const Vector3 *normal = &m_normals[i];
+		fwrite(&normal->x, sizeof(float), 1, fp);
+		fwrite(&normal->y, sizeof(float), 1, fp);
+		fwrite(&normal->z, sizeof(float), 1, fp);
+	}
+
+	// texture coordinates chunk
+	fputs("TXT", fp);
+	long numTexCoords = m_numTexCoords;
+	long sizeofTexCoords = (sizeof(float) * 2) * numTexCoords + sizeof(long);
+	fwrite(&sizeofTexCoords, sizeof(long), 1, fp);
+	fwrite(&numTexCoords, sizeof(long), 1, fp);
+	for (long i = 0; i < numTexCoords; ++i)
+	{
+		const Vector2 *texCoord = &m_texCoords[i];
+		fwrite(&texCoord->x, sizeof(float), 1, fp);
+		fwrite(&texCoord->y, sizeof(float), 1, fp);
+	}
+
+	// materials chunk
+	fputs("MTL", fp);
+
+	long numMaterials = m_numMaterials;
+
+	// figure out the size of all the material texture filename strings
+	long sizeofNames = 0;
+	for (int i = 0; i < numMaterials; ++i)
+		sizeofNames += m_materials[i].material->GetTexture().length() + 1;
+
+	long sizeofMaterials = numMaterials + sizeof(long);
+	fwrite(&sizeofMaterials, sizeof(long), 1, fp);
+	fwrite(&numMaterials, sizeof(long), 1, fp);
+	for (long i = 0; i < numMaterials; ++i)
+	{
+		const SmMaterial *material = &m_materials[i];
+		fputs(material->material->GetTexture().c_str(), fp);
+		fwrite("\0", 1, 1, fp);
+	}
+
+	// triangles chunk
+	fputs("TRI", fp);
+	long numPolys = m_numPolygons;
+	long sizeofPolys = ((sizeof(long) * 3) * 3 + sizeof(long)) * numPolys + sizeof(long);
+	fwrite(&sizeofPolys, sizeof(long), 1, fp);
+	fwrite(&numPolys, sizeof(long), 1, fp);
+	for (long i = 0; i < numPolys; ++i)
+	{
+		const SmPolygon *triangle = &m_polygons[i];
+		long data;
+
+		data = triangle->vertices[0];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = triangle->vertices[1];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = triangle->vertices[2];
+		fwrite(&data, sizeof(long), 1, fp);
+
+		data = triangle->normals[0];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = triangle->normals[1];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = triangle->normals[2];
+		fwrite(&data, sizeof(long), 1, fp);
+
+		data = triangle->texcoords[0];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = triangle->texcoords[1];
+		fwrite(&data, sizeof(long), 1, fp);
+		data = triangle->texcoords[2];
+		fwrite(&data, sizeof(long), 1, fp);
+
+		data = triangle->material;
+		fwrite(&data, sizeof(long), 1, fp);
+	}
 
 	fclose(fp);
 	return true;

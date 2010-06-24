@@ -41,6 +41,8 @@ int main(int argc, char **argv)
 
 	if (extension == ".obj")
 	{
+		printf("Using OBJ converter.\n");
+
 		Obj *obj = new Obj();
 		if (!obj->Load(file, "./"))
 		{
@@ -55,6 +57,8 @@ int main(int argc, char **argv)
 	}
 	else if (extension == ".md2")
 	{
+		printf("Using MD2 converter.\n");
+
 		Md2 *md2 = new Md2();
 		if (!md2->Load(file))
 		{
@@ -69,8 +73,10 @@ int main(int argc, char **argv)
 	}
 	else if (extension == ".sm")
 	{
+		printf("Using SM converer.\n");
+
 		StaticModel *sm = new StaticModel();
-		if (!sm->Load(file, "./"))
+		if (!sm->Load(file))
 		{
 			printf("Error loading SM file.\n\n");
 			return 1;
@@ -86,6 +92,8 @@ int main(int argc, char **argv)
 		printf("Unrecognized file type.\n\n");
 		return 1;
 	}
+
+	printf("Finished converting to %s\n", meshFile.c_str());
 
 	return 0;
 
