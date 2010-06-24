@@ -268,7 +268,7 @@ bool StaticModel::ConvertToMesh(const std::string &file)
 	for (int i = 0; i < numMaterials; ++i)
 		sizeofNames += m_materials[i].material->GetTexture().length() + 1;
 
-	long sizeofMaterials = numMaterials + sizeof(long);
+	long sizeofMaterials = sizeofNames + sizeof(long);
 	fwrite(&sizeofMaterials, sizeof(long), 1, fp);
 	fwrite(&numMaterials, sizeof(long), 1, fp);
 	for (long i = 0; i < numMaterials; ++i)
