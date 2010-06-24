@@ -4,6 +4,7 @@
 
 #include "md2/md2.h"
 #include "obj/obj.h"
+#include "sm/sm.h"
 
 int main(int argc, char **argv)
 {
@@ -63,6 +64,20 @@ int main(int argc, char **argv)
 		if (!md2->ConvertToMesh(meshFile))
 		{
 			printf("Error converting MD2 to MESH.\n\n");
+			return 1;
+		}
+	}
+	else if (extension == ".sm")
+	{
+		StaticModel *sm = new StaticModel();
+		if (!sm->Load(file, "./"))
+		{
+			printf("Error loading SM file.\n\n");
+			return 1;
+		}
+		if (!sm->ConvertToMesh(meshFile))
+		{
+			printf("Error converting SM to MESH.\n\n");
 			return 1;
 		}
 	}
