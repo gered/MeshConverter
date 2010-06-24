@@ -209,5 +209,14 @@ bool StaticModel::Load(const std::string &file, const std::string &texturePath)
 
 bool StaticModel::ConvertToMesh(const std::string &file)
 {
+	FILE *fp = fopen(file.c_str(), "wb");
+	if (fp == NULL)
+		return false;
+
+	fputs("MESH", fp);
+	unsigned char version = 1;
+	fwrite(&version, 1, 1, fp);
+
+	fclose(fp);
 	return true;
 }

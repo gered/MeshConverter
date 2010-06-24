@@ -294,6 +294,8 @@ bool Md2::Load(const std::string &file)
 bool Md2::ConvertToMesh(const std::string &file)
 {
 	FILE *fp = fopen(file.c_str(), "wb");
+	if (fp == NULL)
+		return false;
 
 	fputs("MESH", fp);
 	unsigned char version = 1;
