@@ -114,26 +114,29 @@ bool Ms3d::Load(const std::string &file)
 
 	// read material information
 	fread(&m_numMaterials, 2, 1, fp);
-	m_materials = new Ms3dMaterial[m_numMaterials];
-
-	for (int i = 0; i < m_numMaterials; ++i)
+	if (m_numMaterials > 0)
 	{
-		Ms3dMaterial *material = &m_materials[i];
+		m_materials = new Ms3dMaterial[m_numMaterials];
 
-		fread(&material->name, 32, 1, fp);
-		for (int j = 0; j < 4; ++j)
-			fread(&material->ambient[j], 4, 1, fp);
-		for (int j = 0; j < 4; ++j)
-			fread(&material->diffuse[j], 4, 1, fp);
-		for (int j = 0; j < 4; ++j)
-			fread(&material->specular[j], 4, 1, fp);
-		for (int j = 0; j < 4; ++j)
-			fread(&material->emissive[j], 4, 1, fp);
-		fread(&material->shininess, 4, 1, fp);
-		fread(&material->transparency, 4, 1, fp);
-		fread(&material->mode, 1, 1, fp);
-		fread(&material->texture, 128, 1, fp);
-		fread(&material->alpha, 128, 1, fp);
+		for (int i = 0; i < m_numMaterials; ++i)
+		{
+			Ms3dMaterial *material = &m_materials[i];
+
+			fread(&material->name, 32, 1, fp);
+			for (int j = 0; j < 4; ++j)
+				fread(&material->ambient[j], 4, 1, fp);
+			for (int j = 0; j < 4; ++j)
+				fread(&material->diffuse[j], 4, 1, fp);
+			for (int j = 0; j < 4; ++j)
+				fread(&material->specular[j], 4, 1, fp);
+			for (int j = 0; j < 4; ++j)
+				fread(&material->emissive[j], 4, 1, fp);
+			fread(&material->shininess, 4, 1, fp);
+			fread(&material->transparency, 4, 1, fp);
+			fread(&material->mode, 1, 1, fp);
+			fread(&material->texture, 128, 1, fp);
+			fread(&material->alpha, 128, 1, fp);
+		}
 	}
 
 	// read joints
@@ -141,40 +144,43 @@ bool Ms3d::Load(const std::string &file)
 	fread(&m_editorAnimationTime, 4, 1, fp);
 	fread(&m_numFrames, 4, 1, fp);
 	fread(&m_numJoints, 2, 1, fp);
-	m_joints = new Ms3dJoint[m_numJoints];
-
-	for (int i = 0; i < m_numJoints; ++i)
+	if (m_numJoints > 0)
 	{
-		Ms3dJoint *joint = &m_joints[i];
+		m_joints = new Ms3dJoint[m_numJoints];
 
-		fread(&joint->editorFlags, 1, 1, fp);
-		fread(&joint->name, 32, 1, fp);
-		fread(&joint->parentName, 32, 1, fp);
-		fread(&joint->rotation.x, 4, 1, fp);
-		fread(&joint->rotation.y, 4, 1, fp);
-		fread(&joint->rotation.z, 4, 1, fp);
-		fread(&joint->position.x, 4, 1, fp);
-		fread(&joint->position.y, 4, 1, fp);
-		fread(&joint->position.z, 4, 1, fp);
-		fread(&joint->numRotationFrames, 2, 1, fp);
-		fread(&joint->numTranslationFrames, 2, 1, fp);
-		joint->rotationFrames = new Ms3dKeyFrame[joint->numRotationFrames];
-		for (int j = 0; j < joint->numRotationFrames; ++j)
+		for (int i = 0; i < m_numJoints; ++i)
 		{
-			Ms3dKeyFrame *frame = &joint->rotationFrames[j];
-			fread(&frame->time, 4, 1, fp);
-			fread(&frame->param.x, 4, 1, fp);
-			fread(&frame->param.y, 4, 1, fp);
-			fread(&frame->param.z, 4, 1, fp);
-		}
-		joint->translationFrames = new Ms3dKeyFrame[joint->numTranslationFrames];
-		for (int j = 0; j < joint->numTranslationFrames; ++j)
-		{
-			Ms3dKeyFrame *frame = &joint->translationFrames[j];
-			fread(&frame->time, 4, 1, fp);
-			fread(&frame->param.x, 4, 1, fp);
-			fread(&frame->param.y, 4, 1, fp);
-			fread(&frame->param.z, 4, 1, fp);
+			Ms3dJoint *joint = &m_joints[i];
+
+			fread(&joint->editorFlags, 1, 1, fp);
+			fread(&joint->name, 32, 1, fp);
+			fread(&joint->parentName, 32, 1, fp);
+			fread(&joint->rotation.x, 4, 1, fp);
+			fread(&joint->rotation.y, 4, 1, fp);
+			fread(&joint->rotation.z, 4, 1, fp);
+			fread(&joint->position.x, 4, 1, fp);
+			fread(&joint->position.y, 4, 1, fp);
+			fread(&joint->position.z, 4, 1, fp);
+			fread(&joint->numRotationFrames, 2, 1, fp);
+			fread(&joint->numTranslationFrames, 2, 1, fp);
+			joint->rotationFrames = new Ms3dKeyFrame[joint->numRotationFrames];
+			for (int j = 0; j < joint->numRotationFrames; ++j)
+			{
+				Ms3dKeyFrame *frame = &joint->rotationFrames[j];
+				fread(&frame->time, 4, 1, fp);
+				fread(&frame->param.x, 4, 1, fp);
+				fread(&frame->param.y, 4, 1, fp);
+				fread(&frame->param.z, 4, 1, fp);
+			}
+			joint->translationFrames = new Ms3dKeyFrame[joint->numTranslationFrames];
+			for (int j = 0; j < joint->numTranslationFrames; ++j)
+			{
+				Ms3dKeyFrame *frame = &joint->translationFrames[j];
+				fread(&frame->time, 4, 1, fp);
+				fread(&frame->param.x, 4, 1, fp);
+				fread(&frame->param.y, 4, 1, fp);
+				fread(&frame->param.z, 4, 1, fp);
+			}
 		}
 	}
 
