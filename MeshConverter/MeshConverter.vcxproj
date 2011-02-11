@@ -77,6 +77,7 @@
     <ClCompile Include="src\assets\material.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\md2\md2.cpp" />
+    <ClCompile Include="src\ms3d\ms3d.cpp" />
     <ClCompile Include="src\obj\obj.cpp" />
     <ClCompile Include="src\sm\sm.cpp" />
   </ItemGroup>
@@ -85,6 +86,7 @@
     <ClInclude Include="src\geometry\vector2.h" />
     <ClInclude Include="src\geometry\vector3.h" />
     <ClInclude Include="src\md2\md2.h" />
+    <ClInclude Include="src\ms3d\ms3d.h" />
     <ClInclude Include="src\obj\obj.h" />
     <ClInclude Include="src\sm\sm.h" />
   </ItemGroup>

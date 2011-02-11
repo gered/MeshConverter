@@ -5,6 +5,7 @@
 #include "md2/md2.h"
 #include "obj/obj.h"
 #include "sm/sm.h"
+#include "ms3d/ms3d.h"
 
 int main(int argc, char **argv)
 {
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 	}
 	else if (extension == ".sm")
 	{
-		printf("Using SM converer.\n");
+		printf("Using SM converter.\n");
 
 		StaticModel *sm = new StaticModel();
 		if (!sm->Load(file))
@@ -84,6 +85,22 @@ int main(int argc, char **argv)
 		if (!sm->ConvertToMesh(meshFile))
 		{
 			printf("Error converting SM to MESH.\n\n");
+			return 1;
+		}
+	}
+	else if (extension == ".ms3d")
+	{
+		printf("Using MS3D converter.\n");
+
+		Ms3d *ms3d = new Ms3d();
+		if (!ms3d->Load(file))
+		{
+			printf("Error loading MS3D file.\n\n");
+			return 1;
+		}
+		if (!ms3d->ConvertToMesh(meshFile))
+		{
+			printf("Error converting MS3D to MESH.\n\n");
 			return 1;
 		}
 	}
