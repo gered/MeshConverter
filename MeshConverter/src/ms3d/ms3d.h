@@ -62,6 +62,37 @@ struct Ms3dMaterial
 	char alpha[128];
 };
 
+struct Ms3dKeyFrame
+{
+	float time;
+	Vector3 param;
+};
+
+struct Ms3dJoint
+{
+	unsigned char editorFlags;
+	char name[32];
+	char parentName[32];
+	Vector3 rotation;
+	Vector3 position;
+	unsigned short numRotationFrames;
+	unsigned short numTranslationFrames;
+	Ms3dKeyFrame *rotationFrames;
+	Ms3dKeyFrame *translationFrames;
+
+	Ms3dJoint()
+	{
+		rotationFrames = NULL;
+		translationFrames = NULL;
+	}
+
+	~Ms3dJoint()
+	{
+		delete[] rotationFrames;
+		delete[] translationFrames;
+	}
+};
+
 class Ms3d
 {
 public:
@@ -76,20 +107,27 @@ public:
 	unsigned short GetNumTriangles()                       { return m_numTriangles; }
 	unsigned short GetNumMeshes()                          { return m_numMeshes; }
 	unsigned short GetNumMaterials()                       { return m_numMaterials; }
+	unsigned short GetNumJoints()                          { return m_numJoints; }
 	Ms3dVertex* GetVertices()                              { return m_vertices; }
 	Ms3dTriangle* GetTriangles()                           { return m_triangles; }
 	Ms3dMesh* GetMeshes()                                  { return m_meshes; }
 	Ms3dMaterial* GetMaterials()                           { return m_materials; }
+	Ms3dJoint* GetJoints()                                 { return m_joints; }
 
 private:
 	unsigned short m_numVertices;
 	unsigned short m_numTriangles;
 	unsigned short m_numMeshes;
 	unsigned short m_numMaterials;
+	unsigned short m_numJoints;
+	float m_animationFps;
+	float m_editorAnimationTime;
+	int m_numFrames;
 	Ms3dVertex *m_vertices;
 	Ms3dTriangle *m_triangles;
 	Ms3dMesh *m_meshes;
 	Ms3dMaterial *m_materials;
+	Ms3dJoint *m_joints;
 };
 
 #endif

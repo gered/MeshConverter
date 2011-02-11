@@ -8,10 +8,12 @@ Ms3d::Ms3d()
 	m_numTriangles = 0;
 	m_numMeshes = 0;
 	m_numMaterials = 0;
+	m_numJoints = 0;
 	m_vertices = NULL;
 	m_triangles = NULL;
 	m_meshes = NULL;
 	m_materials = NULL;
+	m_joints = NULL;
 }
 
 void Ms3d::Release()
@@ -20,10 +22,12 @@ void Ms3d::Release()
 	delete[] m_triangles;
 	delete[] m_meshes;
 	delete[] m_materials;
+	delete[] m_joints;
 	m_numVertices = 0;
 	m_numTriangles = 0;
 	m_numMeshes = 0;
 	m_numMaterials = 0;
+	m_numJoints = 0;
 }
 
 bool Ms3d::Load(const std::string &file)
@@ -130,6 +134,48 @@ bool Ms3d::Load(const std::string &file)
 		fread(&material->mode, 1, 1, fp);
 		fread(&material->texture, 128, 1, fp);
 		fread(&material->alpha, 128, 1, fp);
+	}
+
+	// read joints
+	fread(&m_animationFps, 4, 1, fp);
+	fread(&m_editorAnimationTime, 4, 1, fp);
+	fread(&m_numFrames, 4, 1, fp);
+	fread(&m_numJoints, 2, 1, fp);
+	m_joints = new Ms3dJoint[m_numJoints];
+
+	for (int i = 0; i < m_numJoints; ++i)
+	{
+		Ms3dJoint *joint = &m_joints[i];
+
+		fread(&joint->editorFlags, 1, 1, fp);
+		fread(&joint->name, 32, 1, fp);
+		fread(&joint->parentName, 32, 1, fp);
+		fread(&joint->rotation.x, 4, 1, fp);
+		fread(&joint->rotation.y, 4, 1, fp);
+		fread(&joint->rotation.z, 4, 1, fp);
+		fread(&joint->position.x, 4, 1, fp);
+		fread(&joint->position.y, 4, 1, fp);
+		fread(&joint->position.z, 4, 1, fp);
+		fread(&joint->numRotationFrames, 2, 1, fp);
+		fread(&joint->numTranslationFrames, 2, 1, fp);
+		joint->rotationFrames = new Ms3dKeyFrame[joint->numRotationFrames];
+		for (int j = 0; j < joint->numRotationFrames; ++j)
+		{
+			Ms3dKeyFrame *frame = &joint->rotationFrames[j];
+			fread(&frame->time, 4, 1, fp);
+			fread(&frame->param.x, 4, 1, fp);
+			fread(&frame->param.y, 4, 1, fp);
+			fread(&frame->param.z, 4, 1, fp);
+		}
+		joint->translationFrames = new Ms3dKeyFrame[joint->numTranslationFrames];
+		for (int j = 0; j < joint->numTranslationFrames; ++j)
+		{
+			Ms3dKeyFrame *frame = &joint->translationFrames[j];
+			fread(&frame->time, 4, 1, fp);
+			fread(&frame->param.x, 4, 1, fp);
+			fread(&frame->param.y, 4, 1, fp);
+			fread(&frame->param.z, 4, 1, fp);
+		}
 	}
 
 	fclose(fp);
