@@ -108,6 +108,8 @@ public:
 	unsigned short GetNumMeshes()                          { return m_numMeshes; }
 	unsigned short GetNumMaterials()                       { return m_numMaterials; }
 	unsigned short GetNumJoints()                          { return m_numJoints; }
+	float GetAnimationFps()                                { return m_animationFps; }
+	int GetNumFrames()                                     { return m_numFrames; }
 	Ms3dVertex* GetVertices()                              { return m_vertices; }
 	Ms3dTriangle* GetTriangles()                           { return m_triangles; }
 	Ms3dMesh* GetMeshes()                                  { return m_meshes; }
