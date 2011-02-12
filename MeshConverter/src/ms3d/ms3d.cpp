@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "../util/files.h"
+
 Ms3d::Ms3d()
 {
 	m_numVertices = 0;
@@ -104,7 +106,7 @@ bool Ms3d::Load(const std::string &file)
 		Ms3dMesh *mesh = &m_meshes[i];
 
 		fread(&mesh->editorFlags, 1, 1, fp);
-		fread(&mesh->name, 32, 1, fp);
+		ReadString(fp, mesh->name, 32);
 		fread(&mesh->numTriangles, 2, 1, fp);
 		mesh->triangles = new unsigned short[mesh->numTriangles];
 		for (int j = 0; j < mesh->numTriangles; ++j)
@@ -122,7 +124,7 @@ bool Ms3d::Load(const std::string &file)
 		{
 			Ms3dMaterial *material = &m_materials[i];
 
-			fread(&material->name, 32, 1, fp);
+			ReadString(fp, material->name, 32);
 			for (int j = 0; j < 4; ++j)
 				fread(&material->ambient[j], 4, 1, fp);
 			for (int j = 0; j < 4; ++j)
@@ -134,8 +136,8 @@ bool Ms3d::Load(const std::string &file)
 			fread(&material->shininess, 4, 1, fp);
 			fread(&material->transparency, 4, 1, fp);
 			fread(&material->mode, 1, 1, fp);
-			fread(&material->texture, 128, 1, fp);
-			fread(&material->alpha, 128, 1, fp);
+			ReadString(fp, material->texture, 128);
+			ReadString(fp, material->alpha, 128);
 		}
 	}
 
@@ -153,8 +155,8 @@ bool Ms3d::Load(const std::string &file)
 			Ms3dJoint *joint = &m_joints[i];
 
 			fread(&joint->editorFlags, 1, 1, fp);
-			fread(&joint->name, 32, 1, fp);
-			fread(&joint->parentName, 32, 1, fp);
+			ReadString(fp, joint->name, 32);
+			ReadString(fp, joint->parentName, 32);
 			fread(&joint->rotation.x, 4, 1, fp);
 			fread(&joint->rotation.y, 4, 1, fp);
 			fread(&joint->rotation.z, 4, 1, fp);

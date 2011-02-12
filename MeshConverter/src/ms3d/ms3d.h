@@ -32,7 +32,7 @@ struct Ms3dTriangle
 struct Ms3dMesh
 {
 	unsigned char editorFlags;
-	char name[32];
+	std::string name;
 	unsigned short numTriangles;
 	unsigned short *triangles;
 	char materialIndex;
@@ -50,7 +50,7 @@ struct Ms3dMesh
 
 struct Ms3dMaterial
 {
-	char name[32];
+	std::string name;
 	float ambient[4];
 	float diffuse[4];
 	float specular[4];
@@ -58,8 +58,8 @@ struct Ms3dMaterial
 	float shininess;
 	float transparency;
 	char mode;
-	char texture[128];
-	char alpha[128];
+	std::string texture;
+	std::string alpha;
 };
 
 struct Ms3dKeyFrame
@@ -71,8 +71,8 @@ struct Ms3dKeyFrame
 struct Ms3dJoint
 {
 	unsigned char editorFlags;
-	char name[32];
-	char parentName[32];
+	std::string name;
+	std::string parentName;
 	Vector3 rotation;
 	Vector3 position;
 	unsigned short numRotationFrames;

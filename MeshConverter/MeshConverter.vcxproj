@@ -80,6 +80,7 @@
     <ClCompile Include="src\ms3d\ms3d.cpp" />
     <ClCompile Include="src\obj\obj.cpp" />
     <ClCompile Include="src\sm\sm.cpp" />
+    <ClCompile Include="src\util\files.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\assets\material.h" />
@@ -89,6 +90,7 @@
     <ClInclude Include="src\ms3d\ms3d.h" />
     <ClInclude Include="src\obj\obj.h" />
     <ClInclude Include="src\sm\sm.h" />
+    <ClInclude Include="src\util\files.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
