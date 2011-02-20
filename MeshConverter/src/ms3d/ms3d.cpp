@@ -193,5 +193,113 @@ bool Ms3d::Load(const std::string &file)
 
 bool Ms3d::ConvertToMesh(const std::string &file)
 {
-	return false;
+	FILE *fp = fopen(file.c_str(), "wb");
+	if (fp == NULL)
+		return false;
+
+	fputs("MESH", fp);
+	unsigned char version = 1;
+	fwrite(&version, 1, 1, fp);
+
+	// vertices chunk
+	fputs("VTX", fp);
+	long numVertices = m_numVertices;
+	long sizeOfVertices = ((sizeof(float) * 3)) * numVertices + sizeof(long);
+	fwrite(&sizeOfVertices, sizeof(long), 1, fp);
+	fwrite(&numVertices, sizeof(long), 1, fp);
+	for (long i = 0; i < numVertices; ++i)
+	{
+		Ms3dVertex *vertex = &m_vertices[i];
+		fwrite(&vertex->vertex.x, sizeof(float), 1, fp);
+		fwrite(&vertex->vertex.y, sizeof(float), 1, fp);
+		fwrite(&vertex->vertex.z, sizeof(float), 1, fp);
+	}
+
+	// triangles chunk
+	fputs("TRI", fp);
+	long numTriangles = m_numTriangles;
+	long sizeOfTriangles = (sizeof(int) * 3 + (sizeof(float) * 3) * 3 + (sizeof(float) * 2) * 3) * numTriangles + sizeof(long);
+	fwrite(&sizeOfTriangles, sizeof(long), 1, fp);
+	fwrite(&numTriangles, sizeof(long), 1, fp);
+	for (long i = 0; i < numTriangles; ++i)
+	{
+		Ms3dTriangle *triangle = &m_triangles[i];
+		int index = triangle->vertices[0];
+		fwrite(&index, sizeof(int), 1, fp);
+		index = triangle->vertices[1];
+		fwrite(&index, sizeof(int), 1, fp);
+		index = triangle->vertices[2];
+		fwrite(&index, sizeof(int), 1, fp);
+
+		for (int j = 0; j < 3; ++j)
+		{
+			fwrite(&triangle->normals[j].x, sizeof(float), 1, fp);
+			fwrite(&triangle->normals[j].y, sizeof(float), 1, fp);
+			fwrite(&triangle->normals[j].z, sizeof(float), 1, fp);
+		}
+		for (int j = 0; j < 3; ++j)
+		{
+			fwrite(&triangle->texCoords[j].x, sizeof(float), 1, fp);
+			fwrite(&triangle->texCoords[j].y, sizeof(float), 1, fp);
+		}
+	}
+
+	// joints chunk
+	fputs("JNT", fp);
+	long numJoints = m_numJoints;
+	long sizeOfJointNames = 0;
+	for (long i = 0; i < numJoints; ++i)
+		sizeOfJointNames += (m_joints[i].name.length() + 1);
+	long sizeOfJoints = sizeOfJointNames + (sizeof(int) + sizeof(float) * 3 + sizeof(float) * 3) * numJoints + sizeof(long);
+	fwrite(&sizeOfJoints, sizeof(long), 1, fp);
+	fwrite(&numJoints, sizeof(long), 1, fp);
+	for (long i = 0; i < numJoints; ++i)
+	{
+		Ms3dJoint *joint = &m_joints[i];
+		fwrite(joint->name.c_str(), joint->name.length(), 1, fp);
+		char c = '\0';
+		fwrite(&c, 1, 1, fp);
+		int parentIndex = FindIndexOfJoint(joint->parentName);
+		fwrite(&parentIndex, sizeof(int), 1, fp);
+		fwrite(&joint->position.x, sizeof(float), 1, fp);
+		fwrite(&joint->position.y, sizeof(float), 1, fp);
+		fwrite(&joint->position.z, sizeof(float), 1, fp);
+		fwrite(&joint->rotation.x, sizeof(float), 1, fp);
+		fwrite(&joint->rotation.y, sizeof(float), 1, fp);
+		fwrite(&joint->rotation.z, sizeof(float), 1, fp);
+	}
+
+	// joints to vertices mapping chunk
+	fputs("JTV", fp);
+	long numMappings = numVertices;
+	long sizeOfJointMappings = (sizeof(int) + sizeof(float)) * numMappings + sizeof(long);
+	fwrite(&sizeOfJointMappings, sizeof(long), 1, fp);
+	fwrite(&numMappings, sizeof(long), 1, fp);
+	for (long i = 0; i < numMappings; ++i)
+	{
+		Ms3dVertex *vertex = &m_vertices[i];
+		int jointIndex = vertex->jointIndex;
+		fwrite(&jointIndex, sizeof(int), 1, fp);
+		float weight = 1.0f;
+		fwrite(&weight, sizeof(float), 1, fp);
+	}
+
+	fclose(fp);
+
+	return true;
+}
+
+int Ms3d::FindIndexOfJoint(const std::string &jointName)
+{
+	if (jointName.length() == 0)
+		return -1;
+
+	for (int i = 0; i < m_numJoints; ++i)
+	{
+		Ms3dJoint *joint = &m_joints[i];
+		if (joint->name == jointName)
+			return i;
+	}
+
+	return -1;
 }

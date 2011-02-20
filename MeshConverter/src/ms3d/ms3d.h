@@ -117,6 +117,8 @@ public:
 	Ms3dJoint* GetJoints()                                 { return m_joints; }
 
 private:
+	int FindIndexOfJoint(const std::string &jointName);
+
 	unsigned short m_numVertices;
 	unsigned short m_numTriangles;
 	unsigned short m_numMeshes;
