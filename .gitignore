@@ -6,3 +6,5 @@
 Debug/
 Release/
 ipch/
+
+*.suo
