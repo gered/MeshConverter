@@ -1,7 +1,0 @@
-glob:Debug/*
-glob:*.suo
-glob:*.user
-glob:ipch/*
-glob:MeshConverter.opensdf
-glob:MeshConverter.sdf
-glob:MeshConverter/MeshConverter.vcxproj.filters
