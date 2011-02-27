@@ -300,12 +300,19 @@ bool Ms3d::ConvertToMesh(const std::string &file)
 	// sub-meshes / groups chunk
 	fputs("GRP", fp);
 	long numGroups = m_numMeshes;
-	long sizeOfGroups = (sizeof(int)) * numGroups + sizeof(long);
+	long sizeOfGroupNames = 0;
+	for (long i = 0; i < numGroups; ++i)
+		sizeOfGroupNames += (m_meshes[i].name.length() + 1);
+	long sizeOfGroups = sizeOfGroupNames + (sizeof(int)) * numGroups + sizeof(long);
 	fwrite(&sizeOfGroups, sizeof(long), 1, fp);
 	fwrite(&numGroups, sizeof(long), 1, fp);
 	for (long i = 0; i < numGroups; ++i)
 	{
-		int numTriangles = m_meshes[i].numTriangles;
+		Ms3dMesh *mesh = &m_meshes[i];
+		fwrite(mesh->name.c_str(), mesh->name.length(), 1, fp);
+		char c = '\0';
+		fwrite(&c, 1, 1, fp);
+		int numTriangles = mesh->numTriangles;
 		fwrite(&numTriangles, sizeof(int), 1, fp);
 	}
 
