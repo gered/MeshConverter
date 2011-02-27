@@ -188,6 +188,56 @@ bool Ms3d::Load(const std::string &file)
 
 	fclose(fp);
 
+	// check for an animation definition file
+	std::string animationFile = file;
+	animationFile.erase(animationFile.find_last_of('.', std::string::npos));
+	animationFile.append(".animations");
+
+	fp = fopen(animationFile.c_str(), "r");
+	if (fp != NULL)
+	{
+		char *buffer = new char[80];
+		std::string line;
+		std::string name;
+		std::string temp;
+		int start;
+		int end;
+
+		while (!feof(fp))
+		{
+			fgets(buffer, 80, fp);
+			line = buffer;
+
+			if (strlen(buffer) > 5)		// minimum length for a viable frame definition
+			{
+				// get animation name
+				int nameEnd = line.find_first_of(',');
+				if (nameEnd == std::string::npos)
+					continue;
+				name = line.substr(0, nameEnd);
+
+				// get start frame index
+				int startEnd = line.find_first_of(',', nameEnd + 1);
+				if (startEnd == std::string::npos)
+					continue;
+				temp = line.substr(nameEnd + 1, startEnd);
+				start = atoi(temp.c_str());
+
+				// get end frame index
+				temp = line.substr(startEnd + 1, std::string::npos);
+				end = atoi(temp.c_str());
+
+				Ms3dAnimation *animation = new Ms3dAnimation();
+				animation->name = name;
+				animation->startFrame = start;
+				animation->endFrame = end;
+				m_animations.push_back(*animation);
+			}
+		}
+		delete[] buffer;
+
+		fclose(fp);
+	}
 	return true;
 }
 
@@ -313,6 +363,33 @@ bool Ms3d::ConvertToMesh(const std::string &file)
 			fwrite(&rotation->param.x, sizeof(float), 1, fp);
 			fwrite(&rotation->param.y, sizeof(float), 1, fp);
 			fwrite(&rotation->param.z, sizeof(float), 1, fp);
+		}
+	}
+
+	if (m_animations.size() > 0)
+	{
+		// figure out the size of all the animation name strings
+		long sizeofNames = 0;
+		for (int i = 0; i < m_animations.size(); ++i)
+			sizeofNames += m_animations[i].name.length() + 1;
+
+		// animations chunk
+		fputs("ANI", fp);
+		long numAnimations = m_animations.size();
+		long sizeofAnimations = (sizeof(long) * 2) * numAnimations + sizeofNames + sizeof(long);
+		fwrite(&sizeofAnimations, sizeof(long), 1, fp);
+		fwrite(&numAnimations, sizeof(long), 1, fp);
+		for (long i = 0; i < numAnimations; ++i)
+		{
+			long data;
+			const Ms3dAnimation *animation = &m_animations[i];
+			//fputs(animation->name.c_str(), fp);
+			fputs(animation->name.c_str(), fp);
+			fwrite("\0", 1, 1, fp);
+			data = animation->startFrame;
+			fwrite(&data, sizeof(long), 1, fp);
+			data = animation->endFrame;
+			fwrite(&data, sizeof(long), 1, fp);
 		}
 	}
 

@@ -4,6 +4,7 @@
 #include <string>
 #include "../geometry/vector3.h"
 #include "../geometry/vector2.h"
+#include <vector>
 
 struct Ms3dHeader
 {
@@ -93,6 +94,13 @@ struct Ms3dJoint
 	}
 };
 
+struct Ms3dAnimation
+{
+	std::string name;
+	unsigned int startFrame;
+	unsigned int endFrame;
+};
+
 class Ms3d
 {
 public:
@@ -132,6 +140,7 @@ private:
 	Ms3dMesh *m_meshes;
 	Ms3dMaterial *m_materials;
 	Ms3dJoint *m_joints;
+	std::vector<Ms3dAnimation> m_animations;
 };
 
 #endif
