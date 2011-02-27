@@ -268,7 +268,7 @@ bool Ms3d::ConvertToMesh(const std::string &file)
 	// triangles chunk
 	fputs("TRI", fp);
 	long numTriangles = m_numTriangles;
-	long sizeOfTriangles = (sizeof(int) * 3 + (sizeof(float) * 3) * 3 + (sizeof(float) * 2) * 3) * numTriangles + sizeof(long);
+	long sizeOfTriangles = (sizeof(int) * 4 + (sizeof(float) * 3) * 3 + (sizeof(float) * 2) * 3) * numTriangles + sizeof(long);
 	fwrite(&sizeOfTriangles, sizeof(long), 1, fp);
 	fwrite(&numTriangles, sizeof(long), 1, fp);
 	for (long i = 0; i < numTriangles; ++i)
@@ -279,6 +279,9 @@ bool Ms3d::ConvertToMesh(const std::string &file)
 		index = triangle->vertices[1];
 		fwrite(&index, sizeof(int), 1, fp);
 		index = triangle->vertices[2];
+		fwrite(&index, sizeof(int), 1, fp);
+
+		index = triangle->meshIndex;
 		fwrite(&index, sizeof(int), 1, fp);
 
 		for (int j = 0; j < 3; ++j)
@@ -292,6 +295,18 @@ bool Ms3d::ConvertToMesh(const std::string &file)
 			fwrite(&triangle->texCoords[j].x, sizeof(float), 1, fp);
 			fwrite(&triangle->texCoords[j].y, sizeof(float), 1, fp);
 		}
+	}
+
+	// sub-meshes / groups chunk
+	fputs("GRP", fp);
+	long numGroups = m_numMeshes;
+	long sizeOfGroups = (sizeof(int)) * numGroups + sizeof(long);
+	fwrite(&sizeOfGroups, sizeof(long), 1, fp);
+	fwrite(&numGroups, sizeof(long), 1, fp);
+	for (long i = 0; i < numGroups; ++i)
+	{
+		int numTriangles = m_meshes[i].numTriangles;
+		fwrite(&numTriangles, sizeof(int), 1, fp);
 	}
 
 	// joints chunk
