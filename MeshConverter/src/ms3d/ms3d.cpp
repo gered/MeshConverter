@@ -284,6 +284,38 @@ bool Ms3d::ConvertToMesh(const std::string &file)
 		fwrite(&weight, sizeof(float), 1, fp);
 	}
 
+	// joint animation keyframes
+	fputs("JKF", fp);
+	long numFrames = m_numFrames;
+	long sizeOfJointFrames = ((6 * sizeof(float)) * m_numJoints) * numFrames + sizeof(long);
+	fwrite(&sizeOfJointFrames, sizeof(long), 1, fp);
+	fwrite(&numFrames, sizeof(long), 1, fp);
+	for (long i = 0; i < numFrames; ++i)
+	{
+		for (int j = 0; j < m_numJoints; ++j)
+		{
+			Ms3dJoint *joint = &m_joints[j];
+			Ms3dKeyFrame *position;
+			Ms3dKeyFrame *rotation;
+
+			if (i >= joint->numTranslationFrames)
+				position = &joint->translationFrames[0];
+			else
+				position = &joint->translationFrames[i];
+			if (i >= joint->numRotationFrames)
+				rotation = &joint->rotationFrames[0];
+			else
+				rotation = &joint->rotationFrames[i];
+
+			fwrite(&position->param.x, sizeof(float), 1, fp);
+			fwrite(&position->param.y, sizeof(float), 1, fp);
+			fwrite(&position->param.z, sizeof(float), 1, fp);
+			fwrite(&rotation->param.x, sizeof(float), 1, fp);
+			fwrite(&rotation->param.y, sizeof(float), 1, fp);
+			fwrite(&rotation->param.z, sizeof(float), 1, fp);
+		}
+	}
+
 	fclose(fp);
 
 	return true;
