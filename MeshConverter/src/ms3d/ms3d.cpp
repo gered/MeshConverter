@@ -89,10 +89,9 @@ bool Ms3d::Load(const std::string &file)
 			fread(&triangle->normals[j].z, 4, 1, fp);
 		}
 		for (int j = 0; j < 3; ++j)
-		{
 			fread(&triangle->texCoords[j].x, 4, 1, fp);
+		for (int j = 0; j < 3; ++j)
 			fread(&triangle->texCoords[j].y, 4, 1, fp);
-		}
 		fread(&triangle->smoothingGroup, 1, 1, fp);
 		fread(&triangle->meshIndex, 1, 1, fp);
 	}
